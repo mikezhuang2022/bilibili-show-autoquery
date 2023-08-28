@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { useDateFormat, useIntervalFn, useNow, useTitle, useWebNotification } from '@vueuse/core'
+import { getExhibition } from '../api'
 import axios from 'axios';
 import { onMounted, ref, watch } from 'vue';
 
@@ -33,7 +34,7 @@ const exhibition_id = ref<number>(74313)
 // 获取票列表
 const refresh = () => {
   loading.value = true
-  axios.get(`/api/ticket/project/get?version=134&id=${exhibition_id.value}&project_id=${exhibition_id.value}`, {}).then(res => {
+  getExhibition(exhibition_id.value).then(res => {
     // 展览名称解析
     exhibition_name.value = res.data.data.name
     // 票信息解析

@@ -1,5 +1,5 @@
 import { createApp } from 'vue'
-import VueRouter from 'vue-router'
+import { createRouter, createWebHashHistory } from 'vue-router'
 import Home from './pages/Home.vue'
 import Project from './pages/Project.vue'
 import './style.css'
@@ -10,8 +10,8 @@ const routes = [
     { path: '/project', component: Project },
 ]
 
-const router = VueRouter.createRouter({
-    history: VueRouter.createWebHashHistory(),
+const router = createRouter({
+    history: createWebHashHistory(),
     routes,
 })
 
