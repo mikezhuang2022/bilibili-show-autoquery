@@ -98,7 +98,7 @@ onMounted(() => {
           <div class="inline" 
             :class="{ 'text-red-400': !ticket.clickable, 'text-green-400': ticket.clickable }">{{ ticket.clickable ? `可购买` : `不可购买` }}</div>
         </p>
-        <p class="text-slate-500">Ticket_ID: {{ ticket.id }}</p>
+        <p class="text-slate-500">Ticket_ID: {{ ticket.id }} 开始售票时间: {{ ticket.sale_start }}</p>
       </div>
       <div class="flex-none">
         <p class="text-red-400 text-2xl relative right-0 w-fit">￥{{ ticket.price }}</p>
