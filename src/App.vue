@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { useDateFormat, useIntervalFn, useNow, useTitle, useWebNotification } from '@vueuse/core'
 import axios from 'axios';
-import { onMounted, ref } from 'vue';
+import { onMounted, ref, watch } from 'vue';
 
 axios.defaults.withCredentials = true
 const ticket_list = ref<Map<number, Record<string, any>>>(new Map()) // 票列表
@@ -25,10 +25,18 @@ const showMessage = () => {
 const loading = ref<boolean>(false)
 const latest_refresh = ref<string>('') // 最近一次刷新时间
 const now = useDateFormat(useNow(), 'YYYY-MM-DD HH:mm:ss') // 当前时间
+// 展览名称
+const exhibition_name = ref<string>('')
+// 展览ID
+const exhibition_id = ref<number>(74313)
+
 // 获取票列表
 const refresh = () => {
   loading.value = true
-  axios.get('/api/ticket/project/get?version=134&id=74313&project_id=74313', {}).then(res => {
+  axios.get(`/api/ticket/project/get?version=134&id=${exhibition_id.value}&project_id=${exhibition_id.value}`, {}).then(res => {
+    // 展览名称解析
+    exhibition_name.value = res.data.data.name
+    // 票信息解析
     const screen_list = res.data.data.screen_list
     for (let i in screen_list) {
       for (let j in screen_list[i]['ticket_list']) {
@@ -46,6 +54,12 @@ const refresh = () => {
     loading.value = false
   })
 }
+
+// 当id变化时，清空票列表
+watch(exhibition_id, () => {
+  ticket_list.value.clear()
+  refresh()
+})
 
 // 定时获取
 const delay = ref<number>(5 * 1000)
@@ -68,8 +82,14 @@ onMounted(() => {
 </script>
 
 <template>
+  <h1>会员购票监控</h1>
+  <p>展览名称: {{ exhibition_name }}</p>
   <p>最近刷新时间: {{ latest_refresh }}  {{ loading ? `刷新中` : `` }}</p>
-  <a href="https://show.bilibili.com/platform/detail.html?id=74313&from=pc_search_sug">会员购地址</a>
+  <p>
+    展览ID:
+    <input type="number" v-model="exhibition_id" class="w-24" />
+  </p>
+  <a :href="`https://show.bilibili.com/platform/detail.html?id=${exhibition_id}&from=pc_search_sug`">会员购地址</a>
   <table>
     <tr>
       <th>票ID</th>
