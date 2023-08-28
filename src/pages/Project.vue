@@ -82,18 +82,10 @@ onMounted(() => {
   // 立即刷新
   refresh()
 })
-
-// 跳转到主页
-const router = useRouter()
-const tiaozhuan = () => {
-  router.push({ name: 'home' })
-}
 </script>
 
 <template>
-  <p class="text-center text-3xl mt-3">{{ exhibition_name }}
-    <button class="inline" @click="tiaozhuan()">返回主页</button>
-  </p>
+  <p class="text-center text-3xl mt-3">{{ exhibition_name }}</p>
   <p class="text-center mb-3">最近刷新时间: {{ latest_refresh }}  {{ loading ? `刷新中` : `` }}</p>
   <ul>
     <li v-for="[_, ticket] in ticket_list" :key="ticket.id"
@@ -108,19 +100,6 @@ const tiaozhuan = () => {
       </div>
       <div class="flex-none">
         <p class="text-red-400 text-2xl relative right-0 w-fit">￥{{ ticket.price }}</p>
-        <!-- <a :href="'https://show.bilibili.com/platform/detail.html?id=' + exhibition.project_id">会展票地址</a> -->
-        <!-- <button class="right-0 bottom-0 bg-pink-400 text-white font-bold" @click="tiaozhuan(exhibition.project_id)">
-          B站会员购
-          <svg fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" aria-hidden="true" class="h-4 inline">
-            <path stroke-linecap="round" stroke-linejoin="round" d="M4.5 12h15m0 0l-6.75-6.75M19.5 12l-6.75 6.75"></path>
-          </svg>
-        </button>
-        <button class="ml-2 right-0 bottom-0 bg-pink-400 text-white font-bold" @click="project(exhibition.project_id)">
-          蹲票
-          <svg fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" aria-hidden="true" class="h-4 inline">
-            <path stroke-linecap="round" stroke-linejoin="round" d="M4.5 12h15m0 0l-6.75-6.75M19.5 12l-6.75 6.75"></path>
-          </svg>
-        </button> -->
       </div>
     </li>
   </ul>

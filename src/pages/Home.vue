@@ -3,7 +3,7 @@ import { useRouter } from 'vue-router'
 import { ref } from 'vue'
 import axios from 'axios'
 
-const url = '/api/ticket/project/listV2?version=134&page=1&pagesize=16&area=440100&filter=&platform=web&p_type=%E5%B1%95%E8%A7%88'
+const url = '/api/ticket/project/listV2?version=134&page=1&pagesize=20&area=440100&filter=&platform=web&p_type=%E5%B1%95%E8%A7%88'
 const exhibitions = ref<Array<any>>([])
 axios.get(url).then(res => {
   exhibitions.value = res.data.data.result
@@ -15,7 +15,8 @@ const tiaozhuan = (id: number) => {
 
 const router = useRouter()
 const project = (id: number) => {
-  router.push({ name: 'project', params: { id } })
+  const url = router.resolve({ name: 'project', params: { id } }).href
+  window.open(url)
 }
 </script>
 <template>
