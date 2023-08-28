@@ -8,7 +8,7 @@ import { onMounted, ref, watch } from 'vue';
 
 axios.defaults.withCredentials = true
 const ticket_list = ref<Map<number, Record<string, any>>>(new Map()) // 票列表
-useTitle('会员购票监控')
+const title = useTitle('会员购票监控')
 
 // 消息显示
 const body = ref<string>('')
@@ -39,6 +39,7 @@ const refresh = () => {
   getExhibition(exhibition_id.value).then(res => {
     // 展览名称解析
     exhibition_name.value = res.data.data.name
+    title.value = `${exhibition_name.value} - 会员购票监控`
     // 票信息解析
     const screen_list = res.data.data.screen_list
     for (let i in screen_list) {
@@ -86,13 +87,14 @@ onMounted(() => {
 
 <template>
   <p class="text-center text-3xl mt-3">{{ exhibition_name }}</p>
+  <p class="text-center">共{{ ticket_list.size }}个票</p>
   <p class="text-center mb-3">最近刷新时间: {{ latest_refresh }}  {{ loading ? `刷新中` : `` }}</p>
   <ul>
     <li v-for="[_, ticket] in ticket_list" :key="ticket.id"
       class="py-3 px-2 mx-11 border-b-2 border-b-slate-200 flex"
       :class="{ 'bg-green-50': ticket.clickable }">
       <div class="grow">
-        <p class="text-3xl">{{ ticket.screen_name }} {{ ticket.desc }}
+        <p class="md:text-3xl">{{ ticket.screen_name }} {{ ticket.desc }}
           <div class="inline" 
             :class="{ 'text-red-400': !ticket.clickable, 'text-green-400': ticket.clickable }">{{ ticket.clickable ? `可购买` : `不可购买` }}</div>
         </p>
