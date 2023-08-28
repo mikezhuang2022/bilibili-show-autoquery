@@ -6,8 +6,8 @@ import './style.css'
 import App from './App.vue'
 
 const routes = [
-    { path: '/', component: Home },
-    { path: '/project', component: Project },
+    { path: '/', component: Home, name: 'home' },
+    { path: '/project/:id', component: Project, name: 'project' },
 ]
 
 const router = createRouter({
