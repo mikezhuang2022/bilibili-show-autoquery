@@ -34,16 +34,14 @@ const exhibition_name = ref<string>('')
 const exhibition_id = useRouteParams('id', 74313)
 
 // 进度条
-const jinduen = ref(false) // 0->100
-useIntervalFn(()=>{
-  jinduen.value = true
-  setTimeout(() => {
-    jinduen.value = false
-  }, 5000)
-}, 5100, { immediate: true })
+const jinduen = ref(false)
 
 // 获取票列表
 const refresh = () => {
+  jinduen.value = false
+    setTimeout(() => {
+      jinduen.value = true
+    }, 10)
   loading.value = true
   getExhibition(exhibition_id.value).then(res => {
     // 展览名称解析
@@ -57,18 +55,12 @@ const refresh = () => {
         ticket['price'] = ticket['price'] / 100 // 价格单位处理
         // 检测票数据不同
         if(ticket_list.value.get(ticket.id) !== undefined){ // 检测空白
-          // if(ticket_list.value.get(ticket.id)!['clickable'] !== ticket['clickable'] && ticket['clickable']){
           if(ticket_list.value.get(ticket.id)!['clickable'] !== ticket['clickable']){
             // 与票的上一次状态不一样，且可购买
             body.value = `类型:${ticket['desc']}\n日期:${ticket['screen_name']}\n状态:${ticket['clickable']}`
           }
         }
         ticket_list.value.set(ticket.id, ticket) // 更新票列表
-        // if (ticket['clickable'] && !(ticket['desc'].includes('牌区'))) {
-        //   // 可点击且不是牌区
-        //   body.value = `${ticket['desc']}, ${ticket['screen_name']}, ${ticket['price']}元`
-        //   showMessage()
-        // }
       }
     }
     latest_refresh.value = now.value
@@ -139,7 +131,7 @@ onMounted(() => {
 </template>
 <style scoped>
 .jindu {
-  animation: myfirst 5s;
+  animation: myfirst 5s linear;
   width: 0%
 }
 @keyframes myfirst
