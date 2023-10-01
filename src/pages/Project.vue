@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { useDateFormat, useIntervalFn, useNow, useTitle, useWebNotification } from '@vueuse/core'
+import { useDateFormat, useIntervalFn, useNow, useRefHistory, useTitle, useWebNotification } from '@vueuse/core'
 import { useRouteParams } from '@vueuse/router'
 import { useRouter } from 'vue-router'
 import { getExhibition } from '../api'
@@ -15,13 +15,13 @@ const body = ref<string>('')
 const {
   show,
 } = useWebNotification({
-  title: '有票啦！',
+  title: 'B站会员购监控',
   body: body.value,
   renotify: true,
   tag: '测试',
 })
 const showMessage = () => {
-  show({ body: body.value })
+  show({ body: body.value, title: title.value || '会员购票监控' })
 }
 
 
@@ -32,6 +32,15 @@ const now = useDateFormat(useNow(), 'YYYY-MM-DD HH:mm:ss') // 当前时间
 const exhibition_name = ref<string>('')
 // 展览ID 从路由id参数获取
 const exhibition_id = useRouteParams('id', 74313)
+
+// 进度条
+const jinduen = ref(false) // 0->100
+useIntervalFn(()=>{
+  jinduen.value = true
+  setTimeout(() => {
+    jinduen.value = false
+  }, 5000)
+}, 5100, { immediate: true })
 
 // 获取票列表
 const refresh = () => {
@@ -46,6 +55,14 @@ const refresh = () => {
       for (let j in screen_list[i]['ticket_list']) {
         let ticket = screen_list[i]['ticket_list'][j]
         ticket['price'] = ticket['price'] / 100 // 价格单位处理
+        // 检测票数据不同
+        if(ticket_list.value.get(ticket.id) !== undefined){ // 检测空白
+          // if(ticket_list.value.get(ticket.id)!['clickable'] !== ticket['clickable'] && ticket['clickable']){
+          if(ticket_list.value.get(ticket.id)!['clickable'] !== ticket['clickable']){
+            // 与票的上一次状态不一样，且可购买
+            body.value = `类型:${ticket['desc']}\n日期:${ticket['screen_name']}\n状态:${ticket['clickable']}`
+          }
+        }
         ticket_list.value.set(ticket.id, ticket) // 更新票列表
         // if (ticket['clickable'] && !(ticket['desc'].includes('牌区'))) {
         //   // 可点击且不是牌区
@@ -59,26 +76,26 @@ const refresh = () => {
   })
 }
 
-// 当id变化时，清空票列表
-watch(exhibition_id, () => {
-  ticket_list.value.clear()
-  refresh()
-})
-
 // 定时获取
 const delay = ref<number>(5 * 1000)
 useIntervalFn(refresh, delay, { immediate: true })
 
+// 报错
+const err = ref(false)
+
+// 挂载
 onMounted(() => {
   // 测试消息发送
   if (Notification.permission === "denied") {
     Notification.requestPermission().then((permission) => {
       if (permission === "denied") {
+        // 无法发送通知
+        err.value = true
         // alert("无法创建通知");
       }
     });
   }
-  body.value = '测试消息'
+  body.value = '测试消息\n换行'
   showMessage()
   // 立即刷新
   refresh()
@@ -86,23 +103,48 @@ onMounted(() => {
 </script>
 
 <template>
-  <p class="text-center text-3xl mt-3">{{ exhibition_name }}</p>
-  <p class="text-center">共{{ ticket_list.size }}个票</p>
-  <p class="text-center mb-3">最近刷新时间: {{ latest_refresh }}  {{ loading ? `刷新中` : `` }}</p>
+  <!-- 展览名字 -->
+  <p class="text-center text-3xl mt-3 mb-3">{{ exhibition_name }}</p>
+  <!-- 报错 无法发送通知 -->
+  <div class="mx-auto w-fit bg-red-200 rounded border-2 border-red-300 px-4 py-2 text-lg"
+    v-if="err">无法发送通知</div>
+  <!-- 最近刷新时间 -->
+  <p class="text-center mb-3">最近刷新时间: {{ latest_refresh }}</p>
+  <!-- 小小的进度条 :) -->
+  <div class="mx-auto flex flex-auto rounded-full bg-slate-100 w-1/3">
+    <div class="h-2 w-[--jindu] flex-none rounded-l-full rounded-r-[1px] bg-blue-500"
+      :class="{jindu: jinduen}"></div>
+  </div>
+  <!-- 票列表 -->
   <ul>
     <li v-for="[_, ticket] in ticket_list" :key="ticket.id"
       class="py-3 px-2 mx-11 border-b-2 border-b-slate-200 flex"
       :class="{ 'bg-green-50': ticket.clickable }">
+      <!-- 左侧内容 -->
       <div class="grow">
         <p class="md:text-3xl">{{ ticket.screen_name }} {{ ticket.desc }}
-          <div class="inline" 
-            :class="{ 'text-red-400': !ticket.clickable, 'text-green-400': ticket.clickable }">{{ ticket.clickable ? `可购买` : `不可购买` }}</div>
+          <div class="inline md:text-2xl"
+            :class="{ 'text-red-400': !ticket.clickable, 'text-green-400': ticket.clickable }">
+            {{ ticket.clickable ? `可购买` : `不可购买` }}
+          </div>
         </p>
         <p class="text-slate-500">Ticket_ID: {{ ticket.id }} 开始售票时间: {{ ticket.sale_start }}</p>
       </div>
+      <!-- 右侧内容 -->
       <div class="flex-none">
         <p class="text-red-400 text-2xl relative right-0 w-fit">￥{{ ticket.price }}</p>
       </div>
     </li>
   </ul>
 </template>
+<style scoped>
+.jindu {
+  animation: myfirst 5s;
+  width: 0%
+}
+@keyframes myfirst
+{
+    from {width:0%}
+    to {width: 100%}
+}
+</style>
